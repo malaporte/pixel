@@ -85,7 +85,25 @@ end
 
 function Player:control()
   if self.joystick == nil then -- no connector
-    return 0, 0, 0, 0, love.keyboard.isDown('p') and 1 or 0, false
+    local x = 0
+    local y = 0
+    local x2 = 0
+    local y2 = 0
+    local t = 0
+
+    if love.keyboard.isDown('a') then x = -1 end
+    if love.keyboard.isDown('d') then x = 1 end
+    if love.keyboard.isDown('w') then y = -1 end
+    if love.keyboard.isDown('s') then y = 1 end
+
+    if love.keyboard.isDown('j') then x = -1 end
+    if love.keyboard.isDown('l') then x = 1 end
+    if love.keyboard.isDown('i') then y = -1 end
+    if love.keyboard.isDown('k') then y = 1 end
+
+    if love.keyboard.isDown('space') then t = 1 end
+
+    return x, y, x2, y2, t
   end
   
   local x = self.joystick:getGamepadAxis('leftx')
@@ -137,10 +155,10 @@ function Player:update(dt)
       }
     else 
       keys = {
-        a = false,
-        b = false,
-        x = false,
-        y = false
+        a = love.keyboard.isDown('z'),
+        b = love.keyboard.isDown('x'),
+        x = love.keyboard.isDown('n'),
+        y = love.keyboard.isDown('m')
       }
     end
 

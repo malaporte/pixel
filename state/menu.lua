@@ -92,5 +92,30 @@ function menu:joystickpressed(joystick, button)
   end
 end
 
+function menu:keypressed()
+  if love.keyboard.isDown("space") then
+    --    Gamestate.switch(require('state.tutorial'))
+    Gamestate.switch(Game, require('assets.maps.tutorial_map'), Menu.selections[Menu.selection].playerCount)
+
+  end
+
+  -- Handle navigation with dpad
+  if love.keyboard.isDown("down") then
+    menu.moveSelection(1)
+  elseif love.keyboard.isDown("up") then
+    menu.moveSelection(-1)
+  elseif love.keyboard.isDown("backspace") then
+    menu.moveSelection(1)
+  end
+
+  if menu.selection > #menu.selections then
+    menu.selection = 1
+  end
+
+  if menu.selection < 1 then
+    menu.selection = #menu.selections
+  end
+end
+
 
 return menu
