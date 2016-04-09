@@ -1,9 +1,9 @@
 
 extern number nbPosition;
 
-extern number pullingLength;
-extern number pullings[4];
-extern vec2 pullingsPosition[4];
+extern number pullingsLength[6];
+extern number pullings[6];
+extern vec2 pullingsPosition[6];
 
 extern number pushingLength;
 extern number pushings[4];
@@ -25,6 +25,7 @@ vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords 
   
     number pulling = pullings[i];
     vec2 position = pullingsPosition[i];
+    number pullingLength = pullingsLength[i];
     
     vec2 xy = (screen_coords - position) / pullingLength;
     float dist2 = ((xy.x * xy.x) + (xy.y * xy.y));
@@ -34,10 +35,12 @@ vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords 
     }
     
     float dist = sqrt(dist2);
+    
+    float abc = startAt;
   
-    if(dist * pullingLength < startAt){
-      return Texel(texture, texture_coords);
-    }
+    // if(dist * pullingLength < startAt){
+    //   return Texel(texture, texture_coords);
+    // }
     
     if(pulling == 0){
       continue;
@@ -87,7 +90,7 @@ vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords 
     }
     
     vec2 xy2 = (xy) * pushingLength;
-    xy2 += xy / dist * (1 - waveDist) * 50;
+    xy2 += xy / dist * (1 - waveDist) * 30;
     
     vec2 localTc = (position + xy2) / love_ScreenSize.xy;
     

@@ -25,8 +25,9 @@ function Debris.create(def, game)
   local width = def.texture:getWidth()
   local height = def.texture:getHeight()
 
-  local fixture = love.physics.newFixture(debris.body, love.physics.newRectangleShape(0, 0, width, height), def.density)
+  local fixture = love.physics.newFixture(debris.body, love.physics.newRectangleShape(0, 0, width, height), DEBRIS_DENSITY)
   fixture:setFilterData(EntityTypes.Ball.category, EntityTypes.Ball.mask, 0)
+  fixture:setRestitution(0.2)
   table.insert(game.debris, debris)
   table.insert(game.pullables, debris)
 
@@ -35,7 +36,7 @@ end
 
 function Debris:draw()
   if self.hitpoints > 0 then
-    local rgb = self.hitpoints / DEBRIS_HITPOINTS * 255
+    local rgb = (self.hitpoints / DEBRIS_HITPOINTS * (255-DEBRIS_MIN_LUMINOSITY) + DEBRIS_MIN_LUMINOSITY)
     love.graphics.setColor(rgb, rgb, rgb)
     love.graphics.draw(self.texture, self.body:getX(), self.body:getY(), self.body:getAngle(), 1, 1, self.texture:getWidth()/2, self.texture:getHeight()/2)
     love.graphics.setColor(255,255,255,255);

@@ -2,16 +2,14 @@ local orderZ = function(a,b)
   return a.z < b.z
 end
 
-local music = love.audio.newSource("assets/sounds/musicArena1.mp3", "stream")
-music:setLooping(true)
-music:setVolume( 0.7 )
+
 local game = {
 }
 
 function game:init()
   local width, height = love.graphics.getWidth(), love.graphics.getHeight();
-  self.canvas = love.graphics.newCanvas(width, height)
-  self.preCanvas = love.graphics.newCanvas(width, height)
+  self.canvas = love.graphics.newCanvas(width, height, "normal", 4)
+  self.preCanvas = love.graphics.newCanvas(width, height, "normal", 4)
 end
 
 function game:enter(current, def, numberOfPlayer)
@@ -21,11 +19,17 @@ function game:enter(current, def, numberOfPlayer)
   self.balls = {}
   self.debris = {}
   self.players = {}
+  self.pullers = {}
   self.pullables = {}
   self.teamScores = {}
   self.numberOfTeam = 0
   self.currentMap = def
   self.nextMap = def.nextMap
+  self.waitForAnimation = false
+  self.music = def.music
+  
+  self.music:setLooping(true)
+  self.music:setVolume( 0.7 )
 
   for k, entity in pairs(def.entities) do
     if EntityTypes[entity.type] ~= nil then
@@ -42,13 +46,13 @@ function game:enter(current, def, numberOfPlayer)
     game.entities["team_score_" .. i] = EntityTypes.Scoreboard.create({team = i}, game);
   end
 
-  love.audio.play( music )
+  love.audio.play( self.music )
 
   self.world:setCallbacks(game.collisionBegin, collisionEnd, preSolve, postSolve)
 end
 
-function game.leave()
-  love.audio.stop( music )
+function game:leave()
+  love.audio.stop( self.music )
   for k, joystick in pairs(love.joystick.getJoysticks()) do
     joystick:setVibration(0,0)
   end
@@ -98,19 +102,22 @@ function game:update(dt)
     entity:update(dt)
   end
 
-  local teamAlive = 0;
-  local nbTeamAlive = 0;
-  for k, player in pairs(self.players) do
-    if player.hitpoints > 0 then
-      if teamAlive ~=  player.team then
-        nbTeamAlive = nbTeamAlive + 1;
-        teamAlive = player.team
+  if not self.waitForAnimation then
+    local teamAlive = 0;
+    local nbTeamAlive = 0;
+    for k, player in pairs(self.players) do
+      if player.hitpoints > 0 then
+        if teamAlive ~=  player.team then
+          nbTeamAlive = nbTeamAlive + 1;
+          teamAlive = player.team
+        end
       end
     end
-  end
-
-  if nbTeamAlive == 1 then
-    self.teamScores[nbTeamAlive] = self.teamScores[nbTeamAlive] + 1
+    if nbTeamAlive == 1 then
+      self.waitForAnimation = true
+      self.teamScores[nbTeamAlive] = self.teamScores[nbTeamAlive] + 1
+    end
+  else
     local stillAnimated = false;
     for k, player in pairs(self.players) do
       if player.deathTimer > 0 then
@@ -118,6 +125,7 @@ function game:update(dt)
       end
     end
     if not stillAnimated then
+      self.waitForAnimation = false
       -- Reset scene
       for k, player in pairs(self.players) do
         player:reset()
@@ -135,7 +143,7 @@ end
 function game:draw()
   local canvas = love.graphics.getCanvas();
   love.graphics.reset()
-  love.graphics.setCanvas(self.canvas, self.preCanvas)
+  love.graphics.setCanvas(self.canvas)
 
   love.graphics.clear(0,0,0,0)
   love.graphics.setColor(255,255,255,255)
@@ -152,22 +160,6 @@ function game:draw()
     end
   end
   
-  --[[
-  love.graphics.setShader(pullShader)
-  
-  love.graphics.setColor(255,255,255,255)
-  pushShader:send('length',PULL_LENGTH);
-  pushShader:send('startAt',0);
-  
-  for k, player in pairs(self.players) do
-    if PUSH_COOLDOWN - player.pushCd < 0.3 then
-      pushShader:send('timer', PUSH_COOLDOWN - player.pushCd);
-      pushShader:send('pulling', player.pullApplied);
-      pushShader:send('position', {player.body:getX(), player.body:getY()});
-      love.graphics.circle('fill', player.body:getX(), player.body:getY(), PULL_LENGTH)
-    end
-  end
-  ]]--
   love.graphics.reset()
   love.graphics.setCanvas(canvas)
   love.graphics.draw(self.canvas)
